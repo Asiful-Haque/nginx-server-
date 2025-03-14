@@ -1,0 +1,183 @@
+Since your server has low memory (512MB RAM), building your Next.js app is failing. I'll provide a complete step-by-step guide on how to run your Next.js project in production using pm2, including adding swap memory to prevent crashes.
+
+🔹 Step 1: Connect to Your Server
+If you're not already connected, SSH into your server:
+
+bash
+Copy
+Edit
+ssh root@your-server-ip
+Replace your-server-ip with your actual server IP address.
+
+🔹 Step 2: Update and Install Dependencies
+Run the following commands to update your system and install Node.js:
+
+bash
+Copy
+Edit
+apt update && apt upgrade -y
+If you don’t have Node.js installed, install it:
+
+bash
+Copy
+Edit
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt install -y nodejs
+Verify installation:
+
+bash
+Copy
+Edit
+node -v
+npm -v
+🔹 Step 3: Navigate to Your Project Directory
+Move to your Next.js project directory:
+
+bash
+Copy
+Edit
+cd /var/www/html/startup-nextjs
+If you don’t have a Next.js project, create one:
+
+bash
+Copy
+Edit
+npx create-next-app@latest startup-nextjs
+cd startup-nextjs
+🔹 Step 4: Install Project Dependencies
+Run:
+
+bash
+Copy
+Edit
+npm install
+This will install all required dependencies.
+
+🔹 Step 5: Add Swap Memory (Fix Build Failures)
+Since your server has only 512MB RAM, Next.js build will fail. We will add 1GB of swap memory to fix this.
+
+Check if Swap Already Exists
+bash
+Copy
+Edit
+free -h
+If Swap is 0B, follow the next steps to add swap.
+
+Create and Enable Swap
+bash
+Copy
+Edit
+fallocate -l 1G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+Verify swap is active:
+
+bash
+Copy
+Edit
+free -h
+🔹 Step 6: Build the Next.js Project
+Now that we have swap memory, try running:
+
+bash
+Copy
+Edit
+npm run build
+If it succeeds, move to the next step.
+
+🔹 Step 7: Start Next.js Using PM2
+Install PM2
+
+bash
+Copy
+Edit
+npm install -g pm2
+Start Next.js with PM2
+
+bash
+Copy
+Edit
+pm2 start npm --name "nextjs-app" -- run start
+Make PM2 Auto-Restart on Reboot
+
+bash
+Copy
+Edit
+pm2 save
+pm2 startup
+Then, run the command PM2 gives you.
+
+Check Running Apps
+
+bash
+Copy
+Edit
+pm2 list
+🔹 Step 8: Configure Nginx for Reverse Proxy (Optional)
+If you want to access your app via your domain or IP without :3000, set up Nginx.
+
+Install Nginx
+bash
+Copy
+Edit
+apt install nginx -y
+Create an Nginx Config File
+bash
+Copy
+Edit
+nano /etc/nginx/sites-available/nextjs
+Paste This Configuration
+nginx
+Copy
+Edit
+server {
+    listen 80;
+    server_name yourdomain.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+Replace yourdomain.com with your actual domain.
+
+Enable the Configuration
+bash
+Copy
+Edit
+ln -s /etc/nginx/sites-available/nextjs /etc/nginx/sites-enabled/
+nginx -t
+systemctl restart nginx
+🔹 Step 9: Check if Everything is Working
+Run:
+
+bash
+Copy
+Edit
+pm2 list
+It should show nextjs-app as online.
+
+Visit http://your-server-ip/ or http://yourdomain.com/
+Your Next.js app should load.
+
+🔹 Step 10: Keep Your App Updated
+When you make changes, update your app:
+
+bash
+Copy
+Edit
+cd /var/www/html/startup-nextjs
+git pull origin main  # If using Git
+npm install
+npm run build
+pm2 restart nextjs-app
+🎯 You're Done! 🎯
+Now your Next.js app is running in production using pm2 and won't stop even if your server reboots. 🚀
+
+Let me know if you need any modifications! 😃
