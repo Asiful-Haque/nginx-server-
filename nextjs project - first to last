@@ -1,0 +1,193 @@
+Here’s a step-by-step guide to host a Next.js website on your Ubuntu server with PM2 for process management and NGINX as a reverse proxy.
+
+Step 1: Connect to Your Ubuntu Server
+Log in to your Ubuntu server using SSH:
+
+bash
+Copy
+Edit
+ssh username@your_server_ip
+Step 2: Install Required Packages
+Make sure your server is up to date:
+
+bash
+Copy
+Edit
+sudo apt update && sudo apt upgrade -y
+Then, install the required dependencies:
+
+bash
+Copy
+Edit
+sudo apt install curl git unzip nginx -y
+Step 3: Install Node.js and npm
+Check the latest LTS version from Node.js website and install it:
+
+bash
+Copy
+Edit
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt install -y nodejs
+Verify the installation:
+
+bash
+Copy
+Edit
+node -v
+npm -v
+Step 4: Install PM2 (Process Manager for Node.js)
+Install PM2 globally:
+
+bash
+Copy
+Edit
+npm install -g pm2
+Step 5: Clone Your Next.js Project
+If your project is hosted on GitHub, clone it to your server:
+
+bash
+Copy
+Edit
+cd /var/www
+sudo git clone https://github.com/your_username/your_nextjs_project.git
+cd your_nextjs_project
+Or, if you have your Next.js project as a ZIP file, upload and extract it:
+
+bash
+Copy
+Edit
+sudo mv your_project.zip /var/www/
+cd /var/www/
+sudo unzip your_project.zip
+cd your_project_folder
+Step 6: Install Project Dependencies
+Run:
+
+bash
+Copy
+Edit
+npm install
+Step 7: Build Your Next.js Application
+bash
+Copy
+Edit
+npm run build
+If you are using Next.js API routes, start the server with:
+
+bash
+Copy
+Edit
+npm run start
+Or, if you want to serve a static site, export it:
+
+bash
+Copy
+Edit
+npm run export
+The static files will be in the out/ directory.
+
+Step 8: Start the Next.js App with PM2
+Run:
+
+bash
+Copy
+Edit
+pm2 start npm --name "nextjs-app" -- start
+Check if it's running:
+
+bash
+Copy
+Edit
+pm2 list
+To ensure PM2 starts on reboot:
+
+bash
+Copy
+Edit
+pm2 startup
+pm2 save
+Step 9: Set Up NGINX as a Reverse Proxy
+Open the NGINX configuration file:
+
+bash
+Copy
+Edit
+sudo nano /etc/nginx/sites-available/nextjs
+Add the following configuration:
+
+nginx
+Copy
+Edit
+server {
+    listen 80;
+    server_name your_domain_or_IP;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+Save and close the file.
+
+Create a symlink:
+
+bash
+Copy
+Edit
+sudo ln -s /etc/nginx/sites-available/nextjs /etc/nginx/sites-enabled/
+Test and restart NGINX:
+
+bash
+Copy
+Edit
+sudo nginx -t
+sudo systemctl restart nginx
+Step 10: Set Up SSL (Optional but Recommended)
+If you have a domain, use Let's Encrypt for a free SSL certificate:
+
+bash
+Copy
+Edit
+sudo apt install certbot python3-certbot-nginx -y
+sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+Set up automatic SSL renewal:
+
+bash
+Copy
+Edit
+sudo certbot renew --dry-run
+Step 11: Enable Firewall (Optional)
+Allow necessary ports:
+
+bash
+Copy
+Edit
+sudo ufw allow OpenSSH
+sudo ufw allow 'Nginx Full'
+sudo ufw enable
+Step 12: Verify Everything
+Check if your Next.js app is running:
+
+bash
+Copy
+Edit
+pm2 list
+Check if NGINX is running:
+
+bash
+Copy
+Edit
+sudo systemctl status nginx
+Now, visit your domain or server IP in a browser!
+
+Done! 🚀 Your Next.js site is live on your Ubuntu server. Let me know if you need any help! 😊
+
+
+
+
+
+
