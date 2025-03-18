@@ -219,3 +219,67 @@ If RAM is full, increase swap memory:
         sudo swapon /swapfile
 ✅ Helps prevent crashes due to memory limits.
 
+
+
+
+
+-------------------------------------------------------------an example of twinforce site with next-js config file --------------------------------------------------------------
+sites-available ---> sites-enable
+twinforce-site file
+|
+server {
+        listen 80;
+        server_name twinforce.net www.twinforce.net;  
+
+        location / {
+            proxy_pass http://localhost:3000;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection 'upgrade';
+            proxy_set_header Host $host;
+            proxy_cache_bypass $http_upgrade; 
+        }
+} 
+
+
+
+default file 
+|
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html;
+    index index.html index.htm index.nginx-debian.html;
+    server_name _;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    # pass PHP scripts to FastCGI server
+    # location ~ \.php$ {
+    #     include snippets/fastcgi-php.conf;
+    #     fastcgi_pass unix:/run/php/php7.4-fpm.sock;
+    #     # fastcgi_pass 127.0.0.1:9000;
+    # }
+
+    # deny access to .htaccess files, if Apache's document root
+    # concurs with nginx's one
+    # location ~ /\.ht {
+    #     deny all;
+    # }
+}
+
+# Virtual Host configuration for example.com
+# server {
+#     listen 80;
+#     listen [::]:80;
+#     server_name example.com;
+#     root /var/www/example.com;
+#     index index.html;
+#     location / {
+#         try_files $uri $uri/ =404;
+#     }
+# }
+
