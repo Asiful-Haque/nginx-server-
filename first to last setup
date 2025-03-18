@@ -225,7 +225,7 @@ If RAM is full, increase swap memory:
 
 -------------------------------------------------------------an example of twinforce site with next-js config file --------------------------------------------------------------
 sites-available ---> sites-enable
-twinforce-site file
+twinforce-site file                     -----NOT THE IDEAL ONE...ACTUAL ONE IS UPSIDE<<<COLLAB BOTH----
 |
 server {
         listen 80;
